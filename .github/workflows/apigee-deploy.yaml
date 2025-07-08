@@ -1,4 +1,4 @@
-# This is a basic workflow to deploy an ApigeeX proxy
+lt-# This is a basic workflow to deploy an ApigeeX proxy
 
 name: Deploy Apigee X Proxy
 
@@ -67,8 +67,8 @@ jobs:
 
       - name: Deploy Apigee X Proxy
         run: |
-          apigeecli apis import --org "$APIGEE_X_ORG" --token "$(gcloud auth print-access-token)" --folder ./bundles
-          apigeecli apis deploy --org "$APIGEE_X_ORG" --env "$APIGEE_X_ENV" --token "$(gcloud auth print-access-token)" --name "$APIGEE_PROXY_NAME" --ovr
+          apigeecli apis import --org "$APIGEE_X_ORG" --default-token --folder ./bundles
+          apigeecli apis deploy --org "$APIGEE_X_ORG" --env "$APIGEE_X_ENV" --default-token --name "$APIGEE_PROXY_NAME" --ovr
 
       - name: Output Deployment Info
         run: |
