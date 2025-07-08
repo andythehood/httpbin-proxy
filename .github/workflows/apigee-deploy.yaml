@@ -1,4 +1,4 @@
-lt-# This is a basic workflow to deploy an ApigeeX proxy
+# This is a basic workflow to deploy an ApigeeX proxy
 
 name: Deploy Apigee X Proxy
 
