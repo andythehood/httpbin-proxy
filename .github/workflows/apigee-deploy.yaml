@@ -59,10 +59,15 @@ jobs:
           curl -sLO https://github.com/apigee/apigeecli/releases/download/v2.13.0/apigeecli_v2.13.0_Linux_x86_64.zip
           unzip apigeecli_v2.13.0_Linux_x86_64.zip
           sudo mv apigeecli_v2.13.0_Linux_x86_64/apigeecli /usr/local/bin/
-          
+
+      - name: Create API bundle
+        run: |
+          mkdir bundles
+          zip -r bundles/$APIGEE_PROXY_NAME.zip apiproxy
+
       - name: Deploy Apigee X Proxy
         run: |
-          apigeecli apis import --org "$APIGEE_X_ORG" --token "$(gcloud auth print-access-token)" --folder ./apiproxy
+          apigeecli apis import --org "$APIGEE_X_ORG" --token "$(gcloud auth print-access-token)" --folder ./bundles
           apigeecli apis deploy --org "$APIGEE_X_ORG" --env "$APIGEE_X_ENV" --token "$(gcloud auth print-access-token)" --name "$APIGEE_PROXY_NAME" --ovr
 
       - name: Output Deployment Info
