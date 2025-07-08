@@ -62,8 +62,8 @@ jobs:
           
       - name: Deploy Apigee X Proxy
         run: |
-          apigeecli apis import --org "$APIGEE_X_ORG" --env "$APIGEE_X_ENV" --token "${{steps.auth.outputs.access_token}}" --file ./apiproxy --name "$APIGEE_PROXY_NAME"
-          apigeecli apis deploy --org "$APIGEE_X_ORG" --env "$APIGEE_X_ENV" --token "${{steps.auth.outputs.access_token}}" --name "$APIGEE_PROXY_NAME" --override
+          apigeecli apis import --org "$APIGEE_X_ORG" --token "$(gcloud auth print-access-token)" --file ./apiproxy --name "$APIGEE_PROXY_NAME"
+          apigeecli apis deploy --org "$APIGEE_X_ORG" --env "$APIGEE_X_ENV" --token "$(gcloud auth print-access-token)" --name "$APIGEE_PROXY_NAME" --override
 
       - name: Output Deployment Info
         run: |
