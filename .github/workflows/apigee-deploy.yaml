@@ -1,6 +1,6 @@
-# This is a basic workflow to help you get started with Actions
+# This is a basic workflow to deploy an ApigeeX proxy
 
-name: CI
+name: Deploy Apigee X Proxy
 
 # Controls when the workflow will run
 on:
@@ -13,24 +13,56 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+
+env:
+  APIGEE_X_ORG: ${{ secrets.APIGEE_X_ORG }}
+  APIGEE_X_ENV: public
+  APIGEE_PROXY_NAME: httpbin-proxy
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    environment: dev
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+
+      - name: Select branch for environment
+        id: select_branch
+        run: |
+          echo "branch=main" >> $GITHUB_OUTPUT
+          # if [ "${{ github.event.inputs.environment }}" = "dev" ]; then
+          #   echo "branch=main" >> $GITHUB_OUTPUT
+          # # elif [ "${{ github.event.inputs.environment }}" = "sit" ]; then
+          # #   echo "branch=feature/sit" >> $GITHUB_OUTPUT
+          # elif [ "${{ github.event.inputs.environment }}" = "prod" ]; then
+          #   echo "branch=feature/prod" >> $GITHUB_OUTPUT
+          # fi
+      
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          service_account_key: ${{ secrets.APIGEE_SA_KEY }}
+          project_id: ${{ secrets.APIGEE_X_ORG }}
+          export_default_credentials: true
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Install Apigee CLI
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          curl -sLO https://github.com/apigee/apigeecli/releases/latest/download/apigeecli_Linux_x86_64.tar.gz
+          tar -xzf apigeecli_Linux_x86_64.tar.gz
+          sudo mv apigeecli /usr/local/bin/
+          
+      - name: Deploy Apigee X Proxy
+        run: |
+          apigeecli apis import --org "$APIGEE_X_ORG" --env "$APIGEE_X_ENV" --token "$(gcloud auth print-access-token)" --file ./apiproxy --name "$APIGEE_PROXY_NAME"
+          apigeecli apis deploy --org "$APIGEE_X_ORG" --env "$APIGEE_X_ENV" --token "$(gcloud auth print-access-token)" --name "$APIGEE_PROXY_NAME" --override
+
+      - name: Output Deployment Info
+        run: |
+          echo "Deployed $APIGEE_PROXY_NAME to environment $APIGEE_X_ENV in project $APIGEE_X_ORG from branch ${{ steps.select_branch.outputs.branch }}"
