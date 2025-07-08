@@ -47,12 +47,9 @@ jobs:
 
       - name: Authenticate to Google Cloud
         id: auth
-        uses: google-github-actions/auth@v0.4.0
+        uses: google-github-actions/auth@v2
         with:
-          token_format: "access_token"
-          create_credentials_file: true
-          activate_credentials_file: true
-          service_account: ${{ secrets.APIGEE_SA_KEY }}
+          credentials_json: '${{ secrets.APIGEE_SA_KEY }}'
 
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -65,8 +62,8 @@ jobs:
           
       - name: Deploy Apigee X Proxy
         run: |
-          apigeecli apis import --org "$APIGEE_X_ORG" --env "$APIGEE_X_ENV" --token "$(gcloud auth print-access-token)" --file ./apiproxy --name "$APIGEE_PROXY_NAME"
-          apigeecli apis deploy --org "$APIGEE_X_ORG" --env "$APIGEE_X_ENV" --token "$(gcloud auth print-access-token)" --name "$APIGEE_PROXY_NAME" --override
+          apigeecli apis import --org "$APIGEE_X_ORG" --env "$APIGEE_X_ENV" --token "${{steps.auth.outputs.access_token}}" --file ./apiproxy --name "$APIGEE_PROXY_NAME"
+          apigeecli apis deploy --org "$APIGEE_X_ORG" --env "$APIGEE_X_ENV" --token "${{steps.auth.outputs.access_token}}" --name "$APIGEE_PROXY_NAME" --override
 
       - name: Output Deployment Info
         run: |
